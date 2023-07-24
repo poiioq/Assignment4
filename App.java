@@ -196,11 +196,6 @@ public class App extends JFrame {
 					Validation validation = new Validation(textFields);
 					
 					String Id = validation.getId(tfId.getText().trim());
-					if (Id.length() > 9) {
-						setPrompt(Id, true);
-						return;
-					} else {
-
 						PreparedStatement pstmtView = db.getPreparedViewStatement();
 						pstmtView.setString(1, Id);
 						ResultSet rs = pstmtView.executeQuery();
@@ -215,7 +210,6 @@ public class App extends JFrame {
 							setPrompt("No record found!", true);
 							clearTextFields();
 						}
-					}
 				}catch (ValidationException ve) {
 		            // If a validation error occurs, set the prompt and return
 		            setPrompt(ve.getMessage(), true);
@@ -237,10 +231,6 @@ public class App extends JFrame {
 					Validation validation = new Validation(textFields);
 					validation.validate();
 					String Id = validation.getId(tfId.getText().trim());
-					if (Id.length() > 9) {
-						setPrompt(Id, true);
-						return;
-					} else {
 						PreparedStatement pstmtInsert = db.getPreparedInsertStatement();
 						if (db.idExists(Id)) {
 							setPrompt("This ID has been in the table, please try again", true);
@@ -253,7 +243,6 @@ public class App extends JFrame {
 							pstmtInsert.executeUpdate();
 							setPrompt("Insert a new data successfully!");
 						}
-					}
 				} catch (ValidationException ve) {
 		            // If a validation error occurs, set the prompt and return
 		            setPrompt(ve.getMessage(), true);
@@ -274,10 +263,6 @@ public class App extends JFrame {
 					Validation validation = new Validation(textFields);
 					validation.validate();
 					String Id = validation.getId(tfId.getText().trim());
-					if (Id.length() > 9) {
-						setPrompt(Id, true);
-						return;
-					} else {
 						PreparedStatement pstmtView = db.getPreparedViewStatement();
 						pstmtView.setString(1, Id);
 						ResultSet rs = pstmtView.executeQuery();
@@ -319,7 +304,6 @@ public class App extends JFrame {
 						} else {
 							setPrompt("Update cancelled by the user.");
 						}
-					}
 
 				}catch (ValidationException ve) {
 		            // If a validation error occurs, set the prompt and return
