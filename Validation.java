@@ -1,5 +1,9 @@
 package assignment4;
 
+/*Student Name:Xiaoxing Bian
+ * Student ID:n01553051
+ * Section:IGA
+*/
 import javax.swing.JTextField;
 
 import java.util.ArrayList;
@@ -89,7 +93,9 @@ public class Validation {
         		text+=FIELDS[i]+",";
         		text1+=MAX_LENGTHS[i]+",";
         	}
-            throw new ValidationException(text+"exceeds max length "+text1+". Please enter again.");
+        	text = text.substring(0, text.length() - 2);
+        	text1 = text1.substring(0, text1.length() - 2);
+            throw new ValidationException(text+" exceeds max length "+text1+". Please enter again.");
         }
         //print out all the required fields that are empty
         List<Integer> requireErrors = validateRequiredFields();
@@ -99,6 +105,7 @@ public class Validation {
         	for(int i:requireErrors) {
         		text2+=FIELDS[i]+",";
         	}
+        	text2 = text2.substring(0, text2.length() - 2);
             throw new ValidationException(text2+" can not be empty. Please try again.");
         }
     }
