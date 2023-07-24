@@ -16,7 +16,7 @@ public class Validation {
     public Validation(List<JTextField> textFields) {
         this.textFields = textFields;
     }
-
+    //validate each field not exceed the maximum length
     public List<Integer> validateLength() {
     	List<Integer> errorlist= new ArrayList<>();
     	for (int i = 0; i < textFields.size(); i++) {
@@ -27,7 +27,7 @@ public class Validation {
         }
         return errorlist;
     }
-
+    //validate required field not empty
     public List<Integer> validateRequiredFields() {
     	List<Integer> errorlist= new ArrayList<>();
         for (int index : REQUIRED_FIELD_INDICES) {
@@ -56,7 +56,7 @@ public class Validation {
             return false;
         }
     }
-
+    //validate ID(not empty,not exceed max length,be numeric)
     public String getId(String IdRaw) throws ValidationException {
         
         String text=null;
@@ -71,7 +71,7 @@ public class Validation {
         String id = String.format("%09d", Integer.parseInt(IdRaw));
         return id;}
         }
-    
+    //define validationexception
     public class ValidationException extends Exception {
         public ValidationException(String message) {
             super(message);
@@ -79,7 +79,8 @@ public class Validation {
     }
     
     public void validate() throws ValidationException {
-        List<Integer> lenErrors = validateLength();
+        //print out all the fields exceed max length
+    	List<Integer> lenErrors = validateLength();
         String text="";
         String text1="";
         if (!lenErrors.isEmpty()) {
@@ -90,7 +91,7 @@ public class Validation {
         	}
             throw new ValidationException(text+"exceeds max length "+text1+". Please enter again.");
         }
-        
+        //print out all the required fields that are empty
         List<Integer> requireErrors = validateRequiredFields();
         String text2="";
         
