@@ -68,9 +68,9 @@ public class Validation {
         if (isEmpty(IdRaw)) {
         	throw new ValidationException("ID can not be null.");
         }else if (exceedsMaxLength(IdRaw, 9)) {
-        	throw new ValidationException("ID must be 9 characters or less, please try again");
+        	throw new ValidationException("ID must be 9 characters or less.");
         }else if (!isIdNumeric(IdRaw)) {
-            throw new ValidationException("ID must be a number. Please try again");
+            throw new ValidationException("ID must be a number.");
          }else{
         String id = String.format("%09d", Integer.parseInt(IdRaw));
         return id;}
@@ -83,7 +83,18 @@ public class Validation {
     }
     
     public void validate() throws ValidationException {
-        //print out all the fields exceed max length
+    	//print out all the required fields that are empty
+        List<Integer> requireErrors = validateRequiredFields();
+        String text2="";
+        
+        if (!requireErrors.isEmpty()) {
+        	for(int i:requireErrors) {
+        		text2+=FIELDS[i]+",";
+        	}
+        	text2 = text2.substring(0, text2.length() - 1);
+            throw new ValidationException(text2+" can not be empty.");
+        }
+    	//print out all the fields exceed max length
     	List<Integer> lenErrors = validateLength();
         String text="";
         String text1="";
@@ -93,21 +104,11 @@ public class Validation {
         		text+=FIELDS[i]+",";
         		text1+=MAX_LENGTHS[i]+",";
         	}
-        	text = text.substring(0, text.length() - 2);
-        	text1 = text1.substring(0, text1.length() - 2);
-            throw new ValidationException(text+" exceeds max length "+text1+". Please enter again.");
+        	text = text.substring(0, text.length() - 1);
+        	text1 = text1.substring(0, text1.length() - 1);
+            throw new ValidationException(text+" exceeds max length "+text1+".");
         }
-        //print out all the required fields that are empty
-        List<Integer> requireErrors = validateRequiredFields();
-        String text2="";
         
-        if (!requireErrors.isEmpty()) {
-        	for(int i:requireErrors) {
-        		text2+=FIELDS[i]+",";
-        	}
-        	text2 = text2.substring(0, text2.length() - 2);
-            throw new ValidationException(text2+" can not be empty. Please try again.");
-        }
     }
 
 }
