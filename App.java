@@ -11,18 +11,10 @@ import javax.swing.border.*;
 
 import assignment4.Validation.ValidationException;
 /*
- * Student Name: Ricky Wong
- * Student ID: N01581738
+ * Student Name: Ricky Wong, Emma Zhang, Xiaoying Bian
+ * Student ID: N01581738, N01587845, N01553051
  * Section: IGA
- * Logic: The class contains the main method and the GUI components.
- */
-
-/*
- *  ITC5201 – Assignment 4
- *  I declare that this assignment is my own work in accordance with Humber Academic Policy.
- *  No part of this assignment has been copied manually or electronically from any other source
- *  (including web sites) or distributed to other students/social media.
- *  Name: _Ricky Lok Ting Wong__ Student ID: ____N01581738_____ Date: ____2023-07-19______
+ * Logic: The class contains the main method, method of GUI components and action listeners (the logic).
  */
 
 public class App extends JFrame {
@@ -188,34 +180,35 @@ public class App extends JFrame {
 		List<JTextField> textFields = Arrays.asList(tfId, tfLastName, tfFirstName, tfMi, tfAddress, tfCity, tfState,
 				tfTelephone);
 
+		Validation validation = new Validation(textFields);
+
 		// Implement view functionality
 		btnView.addActionListener(new ActionListener() {
 			@Override
 			public void actionPerformed(ActionEvent e) {
 				try {
-					Validation validation = new Validation(textFields);
-					
-					String Id = validation.getId(tfId.getText().trim());
-						PreparedStatement pstmtView = db.getPreparedViewStatement();
-						pstmtView.setString(1, Id);
-						ResultSet rs = pstmtView.executeQuery();
-						if (rs.next()) {
-							ResultSetMetaData rsmt = rs.getMetaData();
-							int columnCount = rsmt.getColumnCount();
-							for (int i = 1; i <= columnCount; i++) {
-								textFields.get(i - 1).setText(rs.getString(i));
-							}
-							setPrompt("Record found!");
-						} else {
-							setPrompt("No record found!", true);
-							clearTextFields();
+					String id = validation.getId(tfId.getText().trim());
+					PreparedStatement pstmtView = db.getPreparedViewStatement();
+					pstmtView.setString(1, id);
+					ResultSet rs = pstmtView.executeQuery();
+					//check if the record exists 
+					if (rs.next()) {
+						ResultSetMetaData rsmt = rs.getMetaData();
+						int columnCount = rsmt.getColumnCount();
+						for (int i = 1; i <= columnCount; i++) {
+							textFields.get(i - 1).setText(rs.getString(i));
 						}
-				}catch (ValidationException ve) {
-		            // If a validation error occurs, set the prompt and return
-		            setPrompt(ve.getMessage(), true);
-		            return;
-		        } catch (SQLException se) {
-		        	setPrompt("Database error occurred. Please try again later.", true);
+						setPrompt("Record found!");
+					} else {
+						setPrompt("No record found!", true);
+						clearTextFields();
+					}
+				} catch (ValidationException ve) {
+					// If a validation error occurs, set the prompt and return
+					setPrompt(ve.getMessage(), true);
+					return;
+				} catch (SQLException se) {
+					setPrompt("Database error occurred. Please try again later.", true);
 					se.printStackTrace();
 					return;
 				}
@@ -228,26 +221,28 @@ public class App extends JFrame {
 			@Override
 			public void actionPerformed(ActionEvent e) {
 				try {
-					Validation validation = new Validation(textFields);
-					validation.validate();
-					String Id = validation.getId(tfId.getText().trim());
+					
+					String id = validation.getId(tfId.getText().trim());
+					
+					//prevent duplication
+					if (db.idExists(id)) {
+						setPrompt("This ID has been in the table, please try again", true);
+						return;
+					} else {
+						validation.validate();
 						PreparedStatement pstmtInsert = db.getPreparedInsertStatement();
-						if (db.idExists(Id)) {
-							setPrompt("This ID has been in the table, please try again", true);
-							return;
-						} else {
-							pstmtInsert.setString(1, Id);
-							for (int i = 1; i < textFields.size(); i++) {
-								pstmtInsert.setString(i + 1, textFields.get(i).getText().trim());
-							}
-							pstmtInsert.executeUpdate();
-							setPrompt("Insert a new data successfully!");
+						pstmtInsert.setString(1, id);
+						for (int i = 1; i < textFields.size(); i++) {
+							pstmtInsert.setString(i + 1, textFields.get(i).getText().trim());
 						}
+						pstmtInsert.executeUpdate();
+						setPrompt("Insert a new data successfully!");
+					}
 				} catch (ValidationException ve) {
-		            // If a validation error occurs, set the prompt and return
-		            setPrompt(ve.getMessage(), true);
-		            return;
-				}catch (SQLException se) {
+					// If a validation error occurs, set the prompt and return
+					setPrompt(ve.getMessage(), true);
+					return;
+				} catch (SQLException se) {
 					setPrompt("Database error occurred. Please try again later.", true);
 					se.printStackTrace();
 					return;
@@ -260,57 +255,62 @@ public class App extends JFrame {
 			@Override
 			public void actionPerformed(ActionEvent e) {
 				try {
-					Validation validation = new Validation(textFields);
-					validation.validate();
-					String Id = validation.getId(tfId.getText().trim());
-						PreparedStatement pstmtView = db.getPreparedViewStatement();
-						pstmtView.setString(1, Id);
-						ResultSet rs = pstmtView.executeQuery();
-						if (!rs.next()) {
-							setPrompt("This record is not included in the table, please try again", true);
-							return;
-						}
+					
+					String id = validation.getId(tfId.getText().trim());
+					PreparedStatement pstmtView = db.getPreparedViewStatement();
+					pstmtView.setString(1, id);
+					ResultSet rs = pstmtView.executeQuery();
+					if (!rs.next()) {
+						setPrompt("This record is not included in the table, please try again", true);
+						return;
+					}
 
-						// Store the old data
-						String oldData = "Old Information:\n";
-						ResultSetMetaData rsmd = rs.getMetaData();
-						int columnCount = rsmd.getColumnCount();
-						for (int i = 1; i <= columnCount; i++) {
-							oldData += rsmd.getColumnName(i) + ": " + rs.getString(i) + "\n";
-						}
-
-						// Store the new data
-						String newData = "New Information:\n";
-						for (int i = 1; i < textFields.size(); i++) {
-							newData += rsmd.getColumnName(i + 1) + ": " + textFields.get(i).getText() + "\n";
-						}
-
-						// Confirm with the user
-						int dialogResult = JOptionPane.showConfirmDialog(null,
-								oldData + "\n" + newData + "\nDo you confirm the update?", "Confirm Update",
-								JOptionPane.YES_NO_OPTION);
-						if (dialogResult == JOptionPane.YES_OPTION) {
-							PreparedStatement pstmtUpdate = db.getPreparedUpdateStatement();
-							for (int i = 1; i < textFields.size(); i++) {
-								if (!textFields.get(i).getText().isEmpty()) {
-									pstmtUpdate.setString(i, textFields.get(i).getText());
-								} else {
-									pstmtUpdate.setString(i, rs.getString(i + 1));
-								}
-							}
-							pstmtUpdate.setString(textFields.size(), Id);
-							pstmtUpdate.executeUpdate();
-							setPrompt("Update a data successfully!");
+					// Store the old data
+					String oldData = "Old Information:\n";
+					ResultSetMetaData rsmd = rs.getMetaData();
+					int columnCount = rsmd.getColumnCount();
+					for (int i = 1; i <= columnCount; i++) {
+						oldData += rsmd.getColumnName(i) + ": " + rs.getString(i) + "\n";
+					}
+					
+					PreparedStatement pstmtUpdate = db.getPreparedUpdateStatement();
+					for (int i = 1; i < textFields.size(); i++) {
+						if (!textFields.get(i).getText().isEmpty()) {
+							pstmtUpdate.setString(i, textFields.get(i).getText());
 						} else {
-							setPrompt("Update cancelled by the user.");
+							pstmtUpdate.setString(i, rs.getString(i+1));
+							textFields.get(i).setText(rs.getString(i+1));
 						}
+					}
+					pstmtUpdate.setString(textFields.size(), id);
+					validation.validate();
+					// Store the new data
+					String newData = "New Information:\n";
+					for (int i = 1; i <= columnCount; i++) {
+						if (!textFields.get(i-1).getText().isEmpty()) {
+							newData += rsmd.getColumnName(i) + ": " + textFields.get(i-1).getText() + "\n";
+						} else {
+							newData += rsmd.getColumnName(i) + ": " + rs.getString(i) + "\n";
+						}
+					
+					}
 
-				}catch (ValidationException ve) {
-		            // If a validation error occurs, set the prompt and return
-		            setPrompt(ve.getMessage(), true);
-		            return;
-				} 
-				catch (SQLException se) {
+					// Confirm with the user
+					int dialogResult = JOptionPane.showConfirmDialog(null,
+							oldData + "\n" + newData + "\nDo you confirm the update?", "Confirm Update",
+							JOptionPane.YES_NO_OPTION);
+					if (dialogResult == JOptionPane.YES_OPTION) {
+						pstmtUpdate.executeUpdate();
+						setPrompt("Update a data successfully!");
+					} else {
+						setPrompt("Update cancelled by the user.");
+					}
+
+				} catch (ValidationException ve) {
+					// If a validation error occurs, set the prompt and return
+					setPrompt(ve.getMessage(), true);
+					return;
+				} catch (SQLException se) {
 					setPrompt("Database error occurred. Please try again later.", true);
 					se.printStackTrace();
 					return;
